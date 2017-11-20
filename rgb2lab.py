@@ -39,6 +39,13 @@ def main():
     data = np.zeros((4096, 4096, 3), dtype=np.uint8)
     data2 = np.zeros((4096, 4096, 3), dtype=np.uint8)
 
+    l_min = 1000
+    l_max = -100
+    a_min = 1000
+    a_max = -1000
+    b_min = 1000
+    b_max = -1000
+
     for r in range(0, 256):
         for g in range(0, 256):
             for b in range(0, 256):
@@ -50,21 +57,32 @@ def main():
                 x, y, z = rgb2xyz(rf, gf, bf)
                 l, a, cb = xyz2lab(x, y, z)
 
-                l_int = int(l / 99.65492608793288 * 255)
-                a_int = int((a + 85.92633935711818) / (85.92633935711818 + 97.9420836379023) * 255)
-                b_int = int((cb + 107.53929844560237) / (107.53929844560237 + 94.19692118570444) * 255)
+                if l_min > l:
+                    l_min = l
+                if l_max < l:
+                    l_max = l
+                if a_min > a:
+                    a_min = a
+                if a_max < a:
+                    a_max = a
+                if b_min > cb:
+                    b_min = cb
+                if b_max < cb:
+                    b_max = cb
 
-                l2 = int(l / 100. * 255)
-                a2 = int((a + 128))
-                b2 = int((cb + 128))
+                l_int = int(l / 100.00000386666655 * 255)
+                a_int = int((a + 86.1827164205346) / (86.1827164205346 + 98.23431188800402) * 255)
+                b_int = int((cb + 107.8601617541481) / (107.53929844560237 + 94.47797505367028) * 255)
 
                 data[int(r + 256 * (b // 16)), int(g + 256 * (b % 16))] = [l_int, a_int, b_int]
-                data2[int(a2 + 256 * (l2 // 16)), int(b2 + 256 * (l2 % 16))] = [r, g, b]
+                #data2[int(l_int + 256 * (b_int // 16)), int(a_int + 256 * (b_int % 16))] = [r, g, b]
 
     img = smp.toimage(data)
     img.save("rgb2lab.png", "png")
-    img2 = smp.toimage(data2)
-    img2.save("lab2rgb.png", "png")
+    print("min ({}, {}, {})".format(l_min, a_min, b_min))
+    print("max ({}, {}, {})".format(l_max, a_max, b_max))
+    #img2 = smp.toimage(data2)
+    #img2.save("lab2rgb.png", "png")
 
 
 if __name__ == '__main__':
