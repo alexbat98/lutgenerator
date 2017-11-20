@@ -37,6 +37,7 @@ def xyz2lab(x, y, z):
 
 def main():
     data = np.zeros((4096, 4096, 3), dtype=np.uint8)
+    data2 = np.zeros((4096, 4096, 3), dtype=np.uint8)
 
     for r in range(0, 256):
         for g in range(0, 256):
@@ -53,10 +54,17 @@ def main():
                 a_int = int((a + 85.92633935711818) / (85.92633935711818 + 97.9420836379023) * 255)
                 b_int = int((cb + 107.53929844560237) / (107.53929844560237 + 94.19692118570444) * 255)
 
+                l2 = int(l / 100. * 255)
+                a2 = int((a + 128))
+                b2 = int((cb + 128))
+
                 data[int(r + 256 * (b // 16)), int(g + 256 * (b % 16))] = [l_int, a_int, b_int]
+                data2[int(a2 + 256 * (l2 // 16)), int(b2 + 256 * (l2 % 16))] = [r, g, b]
 
     img = smp.toimage(data)
     img.save("rgb2lab.png", "png")
+    img2 = smp.toimage(data2)
+    img2.save("lab2rgb.png", "png")
 
 
 if __name__ == '__main__':

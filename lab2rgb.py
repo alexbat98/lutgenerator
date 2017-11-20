@@ -22,13 +22,13 @@ def xyz2rgb(x, y, z):
 
 
 def lab2xyz(l, a, b):
-    fy = (l + 16) / 116.0
-    fx = a / 500 + fy
+    fy = (l + 16.0) / 116.0
+    fx = a / 500.0 + fy
     fz = fy - b / 200
 
     tmp = fx ** 3
 
-    xr = tmp if tmp > XYZ_EPSILON else (116 * fx - 16) / XYZ_KAPPA
+    xr = tmp if tmp > XYZ_EPSILON else (116.0 * fx - 16.0) / XYZ_KAPPA
     yr = fy ** 3 if l > XYZ_KAPPA * XYZ_EPSILON else l / XYZ_KAPPA
 
     tmp = fz ** 3
@@ -43,6 +43,13 @@ def lab2xyz(l, a, b):
 def main():
     data = np.zeros((4096, 4096, 3), dtype=np.uint8)
 
+    r_min = 1000
+    r_max = -1000
+    g_min = 1000
+    g_max = -1000
+    b_min = 1000
+    b_max = -1000
+
     for l in range(0, 256):
         for a in range(0, 256):
             for cb in range(0, 256):
@@ -51,13 +58,57 @@ def main():
                 af = a / 255. * (85.92633935711818 + 97.9420836379023) - 85.92633935711818
                 bf = cb / 255. * (107.53929844560237 + 94.19692118570444) - 107.53929844560237
 
+                #lf = l / 255.0 * 100.
+                #af = (a - 128) / 100.
+                #bf = (cb - 128) / 100.
+
                 x, y, z = lab2xyz(lf, af, bf)
                 r, g, b = xyz2rgb(x, y, z)
 
-                data[l + 256 * (cb // 16), a + 256 * (cb % 16)] = [int(r*255.), int(g*255.), int(b*255.)]
+                if r_max < r:
+                    r_max = r
+                if r_min > r:
+                    r_min = r
+
+                if g_max < g:
+                    g_max = g
+                if g_min > g:
+                    g_min = g
+
+                if b_max < b:
+                    b_max = b
+                if b_min > b:
+                    b_min = b
+
+                #print("for L*a*b* ({}, {}, {}) RGB is ({}, {}, {})".format(lf, af, bf, int(r*255.), int(g*255.),
+
+                r_int = int(r*255)
+                g_int = int(g*255)
+                b_int = int(b*255)
+                if r_int < 0:
+                    r_int = 0
+                if r_int > 255:
+                    r_int = 255
+                if g_int < 0:
+                    g_int = 0
+                if g_int > 255:
+                    g_int = 255
+                if b_int < 0:
+                    b_int = 0
+                if b_int > 255:
+                    b_int = 255
+
+                data[l + 256 * (cb // 16), a + 256 * (cb % 16)] = [r_int, g_int, b_int]
 
     img = smp.toimage(data)
     img.save("lab2rgb.png", "png")
+
+    print("r_min {}".format(r_min))
+    print("r_max {}".format(r_max))
+    print("g_min {}".format(g_min))
+    print("g_max {}".format(g_max))
+    print("b_min {}".format(b_min))
+    print("b_max {}".format(b_max))
 
 
 if __name__ == '__main__':
